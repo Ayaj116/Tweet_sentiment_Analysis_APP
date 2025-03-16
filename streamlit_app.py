@@ -109,8 +109,8 @@ if st.button("📊 Analyze & Find Similar Tweets"):
 
         if similar_tweets:
             st.subheader("🔍 Similar Tweets:")
-            for i, (tweet, label) in enumerate(similar_tweets, 1):
-                st.write(f"**{i}. {tweet}** (Label: {label})")
+            for i, (tweet) in enumerate(similar_tweets, 1):
+                st.write(f"**{i}. {tweet}**")
         else:
             st.write("⚠️ No similar tweets found.")
     else:
