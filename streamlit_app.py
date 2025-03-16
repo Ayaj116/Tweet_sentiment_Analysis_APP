@@ -1,7 +1,6 @@
 import streamlit as st
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
 import time
-from streamlit.components.v1 import html
 
 # Load the fine-tuned model and tokenizer
 MODEL_PATH = "./fine-tuned-distilbert-covid-sentiment"
@@ -10,15 +9,15 @@ model = AutoModelForSequenceClassification.from_pretrained(MODEL_PATH)
 
 # Define label mapping
 label_mapping = {
-    "LABEL_0": "Positive 😊",  
-    "LABEL_1": "Neutral 😐",  
-    "LABEL_2": "Negative 😔"  
+    "LABEL_0": ("Positive 😊", "positive.png"),  
+    "LABEL_1": ("Neutral 😐", "neutral.png"),  
+    "LABEL_2": ("Negative 😔", "negative.png")  
 }
 
 # Load sentiment analysis pipeline
 sentiment_pipeline = pipeline("text-classification", model=model, tokenizer=tokenizer)
 
-# Custom CSS for Animations
+# Custom CSS for styling
 st.markdown("""
     <style>
         body {
@@ -41,26 +40,22 @@ st.markdown("""
         .stButton>button:hover {
             background-color: #45a049;
         }
-        .fade-in {
-            animation: fadeIn 1s ease-in-out;
+        .sentiment-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
         }
-        @keyframes fadeIn {
-            0% {opacity: 0;}
-            100% {opacity: 1;}
+        .sentiment-image {
+            width: 150px;
+            height: 150px;
+            margin-top: 10px;
         }
     </style>
 """, unsafe_allow_html=True)
 
-# Typing effect function for the title
-def typing_effect(text):
-    for i in range(len(text) + 1):
-        st.title(text[:i] + " |")
-        time.sleep(0.1)
-    st.title(text)
-
-# Animated Title
-typing_effect("🦠 COVID-19 Tweet Sentiment Analyzer")
-
+# Title and Instructions
+st.title("🦠 COVID-19 Tweet Sentiment Analyzer")
 st.write("🔍 Enter a tweet below to analyze its sentiment.")
 
 # Input Section
@@ -72,20 +67,17 @@ if st.button("📊 Analyze Sentiment"):
     if user_input:
         with st.spinner("Analyzing sentiment... ⏳"):
             time.sleep(1.5)  # Simulate loading animation
-        
+
         result = sentiment_pipeline(user_input)
         sentiment_label = result[0]['label']
-        sentiment = label_mapping.get(sentiment_label, "Unknown ❓")
+        sentiment, image_path = label_mapping.get(sentiment_label, ("Unknown ❓", "unknown.png"))
         confidence = result[0]['score']
 
-        # Animated Sentiment Display
-        st.markdown(f'<h3 class="fade-in">🏆 Predicted Sentiment: <span style="color:#4CAF50;">{sentiment}</span></h3>', unsafe_allow_html=True)
+        # Display Sentiment Result
+        st.markdown(f"## 🏆 Predicted Sentiment: **{sentiment}**")
 
-        # Smooth Progress Bar Animation
-        progress_bar = st.progress(0)
-        for percent_complete in range(int(confidence * 100) + 1):
-            time.sleep(0.02)
-            progress_bar.progress(percent_complete / 100)
+        # Show Sentiment Image
+        st.image(image_path, caption=f"Sentiment: {sentiment}", use_column_width=False)
 
         # Show confidence score
         st.write(f"📈 **Confidence Score:** {confidence:.2f}")
