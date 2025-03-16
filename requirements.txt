@@ -4,3 +4,9 @@ torchvision
 torchaudio
 streamlit
 asyncio
+chromadb
+numpy
+pandas
+sentence-transformers
+datasets
+evaluate
