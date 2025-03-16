@@ -1,10 +1,10 @@
-transformers
-torch
 torchvision
 torchaudio
-streamlit
 asyncio
-chromadb
 numpy
 pandas
-sentence-transformers
+streamlit==1.30.0
+transformers==4.38.2
+torch==2.2.1
+chromadb==0.4.22
+sentence-transformers==2.2.2
