@@ -3,10 +3,10 @@ torchaudio
 asyncio
 numpy
 pandas
-streamlit==1.30.0
-transformers==4.37.0
-torch==2.1.0
-torchvision==0.16.0
-sentence-transformers==2.2.2
-chromadb==0.4.24
-pysqlite3-binary>=0.5.1
+streamlit
+transformers
+torch
+torchvision
+sentence-transformers
+chromadb
+pysqlite3-binary
