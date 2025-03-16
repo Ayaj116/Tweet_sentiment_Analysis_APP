@@ -63,12 +63,12 @@ if st.button("📊 Analyze Sentiment"):
         confidence = result[0]['score']
 
         # Display Sentiment Result
-        st.markdown(f"## 🏆 Predicted Sentiment: **{sentiment}**")
+        st.markdown(f"## Predicted Sentiment: **{sentiment}**")
 
         # Show confidence score
         st.write(f"📈 **Confidence Score:** {confidence:.2f}")
     else:
-        st.warning("⚠️ Please enter a tweet for analysis.")
+        st.warning(" Please enter a tweet for analysis. ⚠️")
 
 # Sidebar Info
 with st.sidebar:
