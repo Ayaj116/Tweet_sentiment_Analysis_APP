@@ -1,4 +1,5 @@
-python
+requests
 streamlit
 torch
 transformers
+pandas
