@@ -9,9 +9,9 @@ model = AutoModelForSequenceClassification.from_pretrained(MODEL_PATH)
 
 # Define label mapping
 label_mapping = {
-    "LABEL_0": ("Positive 😊"),  
-    "LABEL_1": ("Neutral 😐"),  
-    "LABEL_2": ("Negative 😔")  
+    "LABEL_0": "Positive 😊",  
+    "LABEL_1": "Neutral 😐",  
+    "LABEL_2": "Negative 😔"  
 }
 
 # Load sentiment analysis pipeline
@@ -40,17 +40,6 @@ st.markdown("""
         .stButton>button:hover {
             background-color: #45a049;
         }
-        .sentiment-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-        }
-        .sentiment-image {
-            width: 150px;
-            height: 150px;
-            margin-top: 10px;
-        }
     </style>
 """, unsafe_allow_html=True)
 
@@ -70,18 +59,14 @@ if st.button("📊 Analyze Sentiment"):
 
         result = sentiment_pipeline(user_input)
         sentiment_label = result[0]['label']
-        sentiment, image_path = label_mapping.get(sentiment_label, ("Unknown ❓", "unknown.png"))
+        sentiment = label_mapping.get(sentiment_label, "Unknown ❓")
         confidence = result[0]['score']
 
         # Display Sentiment Result
         st.markdown(f"## 🏆 Predicted Sentiment: **{sentiment}**")
 
-        # Show Sentiment Image
-        st.image(image_path, caption=f"Sentiment: {sentiment}", use_column_width=False)
-
         # Show confidence score
         st.write(f"📈 **Confidence Score:** {confidence:.2f}")
-
     else:
         st.warning("⚠️ Please enter a tweet for analysis.")
 
@@ -93,10 +78,10 @@ with st.sidebar:
     - 🔥 Uses **DistilBERT** model for text classification.
     - 🚀 Developed with **Hugging Face Transformers** & **Streamlit**.
     """)
-
+    
     st.markdown("## 🛠 Built With")
     st.write("✅ Python 🐍, Transformers 🤗, Streamlit 🎈")
 
 # Footer
 st.markdown("---")
-st.markdown("🔹 **Created by Ajay** | Powered by Gen AI 🤖")
+st.markdown("🔹 **Created by [Your Name]** | Powered by AI 🤖")
