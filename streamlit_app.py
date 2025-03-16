@@ -9,9 +9,9 @@ model = AutoModelForSequenceClassification.from_pretrained(MODEL_PATH)
 
 # Define label mapping
 label_mapping = {
-    "LABEL_0": ("Positive 😊", "positive.png"),  
-    "LABEL_1": ("Neutral 😐", "neutral.png"),  
-    "LABEL_2": ("Negative 😔", "negative.png")  
+    "LABEL_0": ("Positive 😊"),  
+    "LABEL_1": ("Neutral 😐"),  
+    "LABEL_2": ("Negative 😔")  
 }
 
 # Load sentiment analysis pipeline
