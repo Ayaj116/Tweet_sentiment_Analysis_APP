@@ -1,34 +1,32 @@
 import streamlit as st
-from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
 import time
+from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
+from chromadb import PersistentClient
+from sentence_transformers import SentenceTransformer
 
-# Load the fine-tuned model and tokenizer
+# Load Sentiment Analysis Model
 MODEL_PATH = "./fine-tuned-distilbert-covid-sentiment"
 tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH)
 model = AutoModelForSequenceClassification.from_pretrained(MODEL_PATH)
+sentiment_pipeline = pipeline("text-classification", model=model, tokenizer=tokenizer)
 
 # Define label mapping
 label_mapping = {
-    "LABEL_0": "Positive 😊",  
-    "LABEL_1": "Neutral 😐",  
-    "LABEL_2": "Negative 😔"  
+    "LABEL_0": "Positive 😊",
+    "LABEL_1": "Neutral 😐",
+    "LABEL_2": "Negative 😔"
 }
 
-# Load sentiment analysis pipeline
-sentiment_pipeline = pipeline("text-classification", model=model, tokenizer=tokenizer)
+# Load Sentence Transformer Model for Embeddings
+embed_model = SentenceTransformer("all-MiniLM-L6-v2")
 
-# Custom CSS for styling
+# Initialize ChromaDB Client
+client = PersistentClient(path="./chroma_db")
+collection = client.get_or_create_collection("covid_tweets")
+
+# Custom Styling
 st.markdown("""
     <style>
-        body {
-            background-color: #f5f7fa;
-        }
-        .stTextInput>div>div>input {
-            font-size: 16px !important;
-        }
-        .stTextArea>div>textarea {
-            font-size: 16px !important;
-        }
         .stButton>button {
             background-color: #4CAF50;
             color: white;
@@ -43,20 +41,30 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Title and Instructions
-st.title("🦠 COVID-19 Tweet Sentiment Analyzer")
-st.write("🔍 Enter a tweet below to analyze its sentiment.")
+# Streamlit UI
+st.title("🦠 COVID-19 Tweet Sentiment & Similarity Analyzer")
+st.write("🔍 Enter a tweet to analyze its sentiment and find similar tweets.")
 
 # Input Section
 st.markdown("### 📝 Enter Tweet")
 user_input = st.text_area(" ", "", height=150)
 
+# Function to Retrieve Similar Tweets
+def retrieve_similar_tweets(query, n_results=3):
+    query_embedding = embed_model.encode(query).tolist()
+    results = collection.query(query_embeddings=[query_embedding], n_results=n_results)
+
+    if results and "metadatas" in results and results["metadatas"]:
+        return [(r["text"], r.get("label", "Unknown")) for r in results["metadatas"][0]]
+    return []
+
 # Analyze Button
-if st.button("📊 Analyze Sentiment"):
+if st.button("📊 Analyze & Find Similar Tweets"):
     if user_input:
         with st.spinner("Analyzing sentiment... ⏳"):
             time.sleep(1.5)  # Simulate loading animation
 
+        # Sentiment Analysis
         result = sentiment_pipeline(user_input)
         sentiment_label = result[0]['label']
         sentiment = label_mapping.get(sentiment_label, "Unknown ❓")
@@ -64,9 +72,17 @@ if st.button("📊 Analyze Sentiment"):
 
         # Display Sentiment Result
         st.markdown(f"## Predicted Sentiment: **{sentiment}**")
-
-        # Show confidence score
         st.write(f"📈 **Confidence Score:** {confidence:.2f}")
+
+        # Retrieve Similar Tweets
+        similar_tweets = retrieve_similar_tweets(user_input)
+
+        if similar_tweets:
+            st.subheader("🔍 Similar Tweets:")
+            for i, (tweet, label) in enumerate(similar_tweets, 1):
+                st.write(f"**{i}. {tweet}** (Label: {label})")
+        else:
+            st.write("⚠️ No similar tweets found.")
     else:
         st.warning(" Please enter a tweet for analysis. ⚠️")
 
@@ -74,13 +90,13 @@ if st.button("📊 Analyze Sentiment"):
 with st.sidebar:
     st.markdown("## ℹ️ About")
     st.write("""
-    - 🎯 This app analyzes the sentiment of COVID-19 related tweets.
-    - 🔥 Uses **DistilBERT** model for text classification.
-    - 🚀 Developed with **Hugging Face Transformers** & **Streamlit**.
+    - 🎯 This app analyzes sentiment & finds similar COVID-19 tweets.
+    - 🔥 Uses **DistilBERT** for sentiment classification.
+    - ⚡ Powered by **ChromaDB** & **Hugging Face Transformers**.
     """)
-    
+
     st.markdown("## 🛠 Built With")
-    st.write("✅ Python 🐍, Transformers 🤗, Streamlit 🎈")
+    st.write("✅ Python 🐍, Transformers 🤗, Streamlit 🎈, ChromaDB 🔍")
 
 # Footer
 st.markdown("---")
