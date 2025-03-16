@@ -81,7 +81,7 @@ def retrieve_similar_tweets(query, n_results=3):
 
     # Handle potential missing metadata
     if results and "metadatas" in results and results["metadatas"][0]:
-        return [(r.get("text", "N/A"), r.get("label", "Unknown")) for r in results["metadatas"][0]]
+        return [r.get("text", "N/A") for r in results["metadatas"][0]]
     return []
 
 # Analyze Button
@@ -109,7 +109,7 @@ if st.button("📊 Analyze & Find Similar Tweets"):
 
         if similar_tweets:
             st.subheader("🔍 Similar Tweets:")
-            for i, (tweet) in enumerate(similar_tweets, 1):
+            for i, tweet in enumerate(similar_tweets, 1):
                 st.write(f"**{i}. {tweet}**")
         else:
             st.write("⚠️ No similar tweets found.")
