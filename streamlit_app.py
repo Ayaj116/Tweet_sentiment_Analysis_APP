@@ -33,44 +33,24 @@ label_mapping = {
 # Load Sentence Transformer Model for Embeddings
 embed_model = SentenceTransformer("all-MiniLM-L6-v2")
 
-# Initialize ChromaDB Client (Use Persistent Storage to avoid errors)
+# Initialize ChromaDB Client (Use Persistent Storage)
 try:
-    client = chromadb.PersistentClient(path="./chroma_db")  # Use persistent storage
+    client = chromadb.PersistentClient(path="./chroma_db")
     collection = client.get_or_create_collection("covid_tweets")
 except Exception as e:
     st.error(f"🚨 Error initializing ChromaDB: {e}")
     st.stop()
 
-# Custom Styling
-st.markdown(
-    """
-    <style>
-        .stButton>button {
-            background-color: #4CAF50;
-            color: white;
-            border-radius: 10px;
-            font-size: 18px;
-            padding: 10px 24px;
-            transition: 0.3s;
-        }
-        .stButton>button:hover {
-            background-color: #45a049;
-        }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
 # Streamlit UI
 st.title("🦠 COVID-19 Tweet Sentiment & Similarity Analyzer")
-st.write("🔍 Enter a tweet to analyze its sentiment and find similar tweets.")
+st.write("🔍 Enter a tweet to analyze its sentiment and improve similar tweet labels.")
 
 # Input Section
 st.markdown("### 📝 Enter Tweet")
 user_input = st.text_area(" ", "", height=150)
 
-# Function to Retrieve Similar Tweets
-def retrieve_similar_tweets(query, n_results=3):
+# Function to Retrieve & Re-analyze Similar Tweets
+def retrieve_and_update_tweets(query, n_results=3):
     query_embedding = embed_model.encode(query).tolist()
     
     # Ensure the collection exists before querying
@@ -79,13 +59,23 @@ def retrieve_similar_tweets(query, n_results=3):
     
     results = collection.query(query_embeddings=[query_embedding], n_results=n_results)
 
-    # Handle potential missing metadata
+    # Process retrieved tweets
+    updated_tweets = []
     if results and "metadatas" in results and results["metadatas"][0]:
-        return [(r.get("text", "N/A"), r.get("label", "Unknown")) for r in results["metadatas"][0]]
-    return []
+        for r in results["metadatas"][0]:
+            tweet_text = r.get("text", "N/A")
+
+            # Re-run sentiment analysis
+            sentiment_result = sentiment_pipeline(tweet_text)
+            new_label = sentiment_result[0]["label"]
+            confidence = sentiment_result[0]["score"]
+
+            updated_tweets.append((tweet_text, label_mapping.get(new_label, "Unknown ❓"), confidence))
+
+    return updated_tweets
 
 # Analyze Button
-if st.button("📊 Analyze & Find Similar Tweets"):
+if st.button("📊 Analyze & Improve Sentiment Labels"):
     if user_input:
         with st.spinner("Analyzing sentiment... ⏳"):
             time.sleep(1.5)  # Simulate loading animation
@@ -104,13 +94,14 @@ if st.button("📊 Analyze & Find Similar Tweets"):
         st.markdown(f"## Predicted Sentiment: **{sentiment}**")
         st.write(f"📈 **Confidence Score:** {confidence:.2f}")
 
-        # Retrieve Similar Tweets
-        similar_tweets = retrieve_similar_tweets(user_input)
+        # Retrieve & Update Similar Tweets
+        updated_tweets = retrieve_and_update_tweets(user_input)
 
-        if similar_tweets:
-            st.subheader("🔍 Similar Tweets:")
-            for i, (tweet, label) in enumerate(similar_tweets, 1):
-                st.write(f"**{i}. {tweet}** (Label: {label})")
+        if updated_tweets:
+            st.subheader("🔍 Similar Tweets (Updated Sentiment Labels):")
+            for i, (tweet, label, conf) in enumerate(updated_tweets, 1):
+                st.write(f"**{i}. {tweet}**")
+                st.markdown(f"🟢 **Corrected Sentiment:** {label} | 🔍 **Confidence:** {conf:.2f}")
         else:
             st.write("⚠️ No similar tweets found.")
     else:
@@ -120,14 +111,9 @@ if st.button("📊 Analyze & Find Similar Tweets"):
 with st.sidebar:
     st.markdown("## ℹ️ About")
     st.write("""
-    - 🎯 This app analyzes sentiment & finds similar COVID-19 tweets.
+    - 🎯 This app analyzes sentiment & **improves similar tweet labels**.
     - 🔥 Uses **DistilBERT** for sentiment classification.
     - ⚡ Powered by **ChromaDB** & **Hugging Face Transformers**.
     """)
 
     st.markdown("## 🛠 Built With")
-    st.write("✅ Python 🐍, Transformers 🤗, Streamlit 🎈, ChromaDB 🔍")
-
-# Footer
-st.markdown("---")
-st.markdown("🔹 **Created by Ajay** | Powered by AI 🤖")
