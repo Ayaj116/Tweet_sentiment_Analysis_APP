@@ -1,7 +1,18 @@
 import streamlit as st
 import time
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
+
+import sys
+
+try:
+    import pysqlite3
+    sys.modules["sqlite3"] = pysqlite3
+except ImportError:
+    pass  # If pysqlite3 is not available, fall back to the system SQLite
+
 from chromadb import Client
+
+
 from sentence_transformers import SentenceTransformer
 
 # Load Sentiment Analysis Model
