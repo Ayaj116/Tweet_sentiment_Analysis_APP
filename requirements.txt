@@ -1,5 +1,6 @@
-requests
-streamlit
-torch
 transformers
-pandas
+torch
+torchvision
+torchaudio
+streamlit
+asyncio
