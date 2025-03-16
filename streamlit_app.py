@@ -84,4 +84,4 @@ with st.sidebar:
 
 # Footer
 st.markdown("---")
-st.markdown("🔹 **Created by [Your Name]** | Powered by AI 🤖")
+st.markdown("🔹 **Created by Ajay** | Powered by AI 🤖")
