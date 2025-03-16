@@ -1,7 +1,7 @@
 import streamlit as st
 import time
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
-from chromadb import PersistentClient
+from chromadb import Client
 from sentence_transformers import SentenceTransformer
 
 # Load Sentiment Analysis Model
@@ -20,8 +20,9 @@ label_mapping = {
 # Load Sentence Transformer Model for Embeddings
 embed_model = SentenceTransformer("all-MiniLM-L6-v2")
 
-# Initialize ChromaDB Client
-client = PersistentClient(path="./chroma_db")
+
+# Use in-memory mode (no persistence)
+client = Client()
 collection = client.get_or_create_collection("covid_tweets")
 
 # Custom Styling
